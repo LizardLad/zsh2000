@@ -1,18 +1,12 @@
 ZSH2000
 ======
 
-![alt tag](https://raw.githubusercontent.com/consolemaverick/zsh2000/master/demo.png)
-
-![alt tag](https://raw.githubusercontent.com/consolemaverick/zsh2000/master/demo2.png)
-
 Powerline looking zsh theme with rvm prompt, git status and branch, current time, user, hostname, pwd, exit status, root and background job status.
 
 Influenced heavily by [agnoster's theme](https://gist.github.com/3712874) and [jeremyFreeAgent's theme](https://github.com/jeremyFreeAgent/oh-my-zsh-powerline-theme)
 
 ### Prerequisites
-
-Install your favorite version of
-[Powerline-patched fonts](https://github.com/Lokaltog/powerline-fonts)
+    zsh config similar to https://wiki.debian.org/Zsh
 
 ### Installation
 
@@ -50,7 +44,3 @@ by adding
 Disable git status on top of plain git clean/dirty
 
     export ZSH_2000_DISABLE_GIT_STATUS='true'
-
-Disable RVM prompt
-
-    export ZSH_2000_DISABLE_RVM='true'
