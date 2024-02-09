@@ -15,6 +15,33 @@ ZSH_THEME_GIT_PROMPT_AHEAD=' ⬆'
 ZSH_THEME_GIT_PROMPT_BEHIND=' ⬇'
 ZSH_THEME_GIT_PROMPT_DIRTY=' ±'
 
+_zsh2000_current_time_millis() {
+    local time_millis
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        # Linux
+        time_millis="$(date +%s.%3N)"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        time_millis="$(gdate +%s.%3N)"
+    elif [[ "$OSTYPE" == "cygwin" ]]; then
+        # POSIX compatibility layer and Linux environment emulation for Windows
+    elif [[ "$OSTYPE" == "msys" ]]; then
+        # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+    elif [[ "$OSTYPE" == "win32" ]]; then
+        # I'm not sure this can happen.
+    elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        # ...
+    else
+        # Unknown.
+    fi
+
+    echo $time_millis
+}
+
+preexec() {
+	_ZSH2000_COMMAND_TIME_BEGIN="$(_zsh2000_current_time_millis)"
+}
+
 prompt_segment() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
@@ -95,12 +122,32 @@ prompt_time() {
   prompt_segment_right white black '%D{%H:%M:%S} '
 }
 
-prompt_rvm() {
-  local rvm_prompt
-  rvm_prompt=`rvm-prompt`
-  if [ "$rvm_prompt" != "" ]; then
-    prompt_segment_right "240" white "$rvm_prompt "
-  fi
+function displaytime {
+  local T=$1
+  local T2=${T%.*}
+  local D=$((T2/1000/60/60/24))
+  local H=$((T2/1000/60/60%24))
+  local M=$((T2/1000/60%60))
+  local S=$((T2/1000%60))
+  local MS=$((T2%1000))
+  (( $D >= 1 )) && echo -n "${D}d "
+  (( $H >= 1 )) && echo -n "${H}h " 
+  (( $M >= 1 )) && echo -n "${M}min " 
+  (( $S >= 1 )) && echo -n "${S}s " 
+  (( $MS >= 1 )) && echo "${MS}ms ⏳" 
+  (( $MS < 1 )) && echo "0ms ⏳"
+}
+
+
+prompt_elapsed() {
+	if [ "$_ZSH2000_COMMAND_TIME_BEGIN" = "-20200325" ] || [ "$_ZSH2000_COMMAND_TIME_BEGIN" = "" ]; then
+            return 1
+        fi
+	local time_end="$(_zsh2000_current_time_millis)"
+	local cost=$(bc -l <<<"(${time_end}-${_ZSH2000_COMMAND_TIME_BEGIN})*1000")
+	local elapsed_millis=${cost%.*}
+	_ZSH2000_COMMAND_TIME_BEGIN="-20200325"
+	prompt_segment_right yellow black "${$(displaytime elapsed_millis)}"
 }
 
 build_prompt() {
@@ -170,11 +217,24 @@ function git_time_since_commit() {
     fi
 }
 
+prompt_return_code() {
+  prompt_segment_right red yellow "$1 ✘"
+}
+
+precmd() {
+	ZSH2000_RETURN_CODE=$?
+}
+
 build_rprompt() {
-  if [ "$ZSH_2000_DISABLE_RVM" != 'true' ];then
-    prompt_rvm
+  if [[ -z "${ZSH2000_RETURN_CODE}" ]];then
+    return 1
   fi
-  prompt_time
+
+  if [[ $ZSH2000_RETURN_CODE != 0 ]];then
+    prompt_return_code $ZSH2000_RETURN_CODE
+  else
+    prompt_elapsed
+  fi
 }
 
 
