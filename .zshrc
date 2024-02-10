@@ -39,7 +39,7 @@ zplug "zsh-users/zsh-autosuggestions"
 zplug "zsh-users/zsh-history-substring-search"
 zplug "zsh-users/zsh-completions"
 zplug "junegunn/fzf"
-zplug "~/.zplug/repos/zsh2000", from:local, as:theme   # Theme
+zplug "~/.zsh2000/zsh2000", from:local, as:theme   # Theme
 
 # zplug - install/load new plugins when zsh is started or reloaded
 if ! zplug check --verbose; then
